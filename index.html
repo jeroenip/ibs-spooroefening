@@ -7,43 +7,49 @@
 </head>
 <body>
 <title>Spoorcrisis IBS-oefening</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@600;700&family=Roboto:wght@400;500;700&display=swap">
 <style>
-/* Layout: een crisislogboek. Eén kolom, tijdstempels in mono, signalen als logregels met een IBS-keuze eronder. */
+/* Layout: een crisislogboek. Eén kolom, donkere kopband met rode lijn, signalen als logregels met een IBS-keuze eronder. */
 :root{
-  --bg:#F2F4F3; --surface:#FFFFFF; --ink:#15201D; --muted:#5A6763; --line:#D3DAD7;
-  --accent:#0B6B4F; --accent-ink:#FFFFFF;
-  --i:#1F56A8; --i-bg:#E4ECF8; --s:#9A5A00; --s-bg:#FAEEDA; --b:#8A2B68; --b-bg:#F6E3EF;
-  --ok:#0B6B4F; --bad:#B3261E;
-  --display:"Bricolage Grotesque","Arial Narrow",Arial,sans-serif;
-  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --bg:#F4F4F6; --surface:#FFFFFF; --ink:#2C2A3B; --muted:#5F5D70; --line:#D6D5DE;
+  --accent:#B20A2F; --accent-ink:#FFFFFF;
+  --band:#2C2A3B; --band-ink:#FFFFFF; --band-muted:#CFCDDC;
+  --i:#1F56A8; --i-bg:#E4ECF8; --s:#8A5200; --s-bg:#FAEEDA; --b:#5B3A8C; --b-bg:#ECE5F6;
+  --ok:#1B7A43; --bad:#B20A2F;
+  --display:Museo,"Zilla Slab",Rockwell,Georgia,serif;
+  --body:Frutiger,Roboto,Arial,sans-serif;
+  --mono:Frutiger,Roboto,Arial,sans-serif;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#111816; --surface:#1A2421; --ink:#E8EEEB; --muted:#9CABA6; --line:#2E3B37;
-  --accent:#4FC79E; --accent-ink:#0B1613;
-  --i:#8DB4F2; --i-bg:#1B2C47; --s:#F0B45A; --s-bg:#3A2A10; --b:#E995C8; --b-bg:#3D1C31;
-  --ok:#4FC79E; --bad:#FF8A80; color-scheme:dark } }
+  --bg:#1A1924; --surface:#2C2A3B; --ink:#F1F0F5; --muted:#ABA9BC; --line:#45435A;
+  --accent:#FF6B86; --accent-ink:#1A1924;
+  --band:#0F0E16; --band-ink:#FFFFFF; --band-muted:#BDBBCD;
+  --i:#8DB4F2; --i-bg:#1F3050; --s:#F0B45A; --s-bg:#43310F; --b:#C5A8F0; --b-bg:#3A2A58;
+  --ok:#5FD08B; --bad:#FF8A9C; color-scheme:dark } }
 :root[data-theme="dark"]{
-  --bg:#111816; --surface:#1A2421; --ink:#E8EEEB; --muted:#9CABA6; --line:#2E3B37;
-  --accent:#4FC79E; --accent-ink:#0B1613;
-  --i:#8DB4F2; --i-bg:#1B2C47; --s:#F0B45A; --s-bg:#3A2A10; --b:#E995C8; --b-bg:#3D1C31;
-  --ok:#4FC79E; --bad:#FF8A80; color-scheme:dark }
+  --bg:#1A1924; --surface:#2C2A3B; --ink:#F1F0F5; --muted:#ABA9BC; --line:#45435A;
+  --accent:#FF6B86; --accent-ink:#1A1924;
+  --band:#0F0E16; --band-ink:#FFFFFF; --band-muted:#BDBBCD;
+  --i:#8DB4F2; --i-bg:#1F3050; --s:#F0B45A; --s-bg:#43310F; --b:#C5A8F0; --b-bg:#3A2A58;
+  --ok:#5FD08B; --bad:#FF8A9C; color-scheme:dark }
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:24px 64px}
 #app{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
-h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.02em}
-h2{font-size:1.5rem;font-weight:800}
-h3{font-size:1.05rem;font-weight:600}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:700}
+h2{font-size:1.6rem;font-weight:700}
+h3{font-size:1.15rem;font-weight:700}
 p{margin:0;max-width:65ch}
-.mono{font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono);font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero{background:var(--band);color:var(--band-ink);padding:24px;border-bottom:6px solid var(--accent);border-radius:3px 3px 0 0}
+.hero .mono,.hero .lead{color:var(--band-muted)}
+.foot{color:var(--muted);font-size:.875rem;border-top:1px solid var(--line);padding-top:12px}
 .stack{display:flex;flex-direction:column;gap:12px}
 .lead{color:var(--muted);font-size:1.05rem}
 
 .ibs-key{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.ibs-key div{padding:12px;border-radius:6px;min-width:0}
+.ibs-key div{padding:12px;border-radius:3px;min-width:0}
 .ibs-key strong{display:block;font-family:var(--display);font-size:1rem}
 .ibs-key span{font-size:.9rem}
 .k-I{background:var(--i-bg);color:var(--i)} .k-S{background:var(--s-bg);color:var(--s)} .k-B{background:var(--b-bg);color:var(--b)}
@@ -52,12 +58,12 @@ p{margin:0;max-width:65ch}
 fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
 legend{padding:0;margin-bottom:8px}
 .opts{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.opt{text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:12px;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.opt{text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:12px;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
 .opt small{color:var(--muted);font-size:.875rem}
 .opt[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
-.btn{font:600 1rem var(--body);background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:12px 20px;cursor:pointer;align-self:flex-start}
+.btn{font:600 1rem var(--body);background:var(--accent);color:var(--accent-ink);border:0;border-radius:3px;padding:12px 20px;cursor:pointer;align-self:flex-start}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
@@ -69,7 +75,7 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
 .sig{padding-block:16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
 .sig q{quotes:"“" "”";font-size:1.05rem}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.seg button{font:500 .9rem var(--body);padding:8px 4px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-width:0;overflow-wrap:anywhere}
+.seg button{font:500 .9rem var(--body);padding:8px 4px;border-radius:3px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-width:0;overflow-wrap:anywhere}
 .seg button[aria-pressed="true"].l-I{background:var(--i-bg);border-color:var(--i);color:var(--i);font-weight:600}
 .seg button[aria-pressed="true"].l-S{background:var(--s-bg);border-color:var(--s);color:var(--s);font-weight:600}
 .seg button[aria-pressed="true"].l-B{background:var(--b-bg);border-color:var(--b);color:var(--b);font-weight:600}
@@ -79,8 +85,8 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-vi
 .verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
 .why{color:var(--muted);font-size:.95rem}
 
-textarea{width:100%;min-height:150px;font:inherit;padding:12px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);resize:vertical}
-.model{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px}
+textarea{width:100%;min-height:150px;font:inherit;padding:12px;border-radius:3px;border:1px solid var(--line);background:var(--surface);color:var(--ink);resize:vertical}
+.model{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px;display:flex;flex-direction:column;gap:12px}
 .model dl{margin:0;display:flex;flex-direction:column;gap:10px}
 .model dt{font-family:var(--display);font-weight:600}
 .model dd{margin:0}
@@ -90,7 +96,7 @@ textarea{width:100%;min-height:150px;font:inherit;padding:12px;border-radius:6px
 .check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
 details summary{cursor:pointer;font-weight:600}
 .score{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-.score div{padding:12px;border-radius:6px;background:var(--surface);border:1px solid var(--line)}
+.score div{padding:12px;border-radius:3px;background:var(--surface);border:1px solid var(--line)}
 .score b{font-family:var(--display);font-size:1.75rem;display:block;font-variant-numeric:tabular-nums}
 ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 </style>
@@ -273,7 +279,7 @@ const checks=r=>st.chk[r]||(st.chk[r]=[false,false,false,false]);
 function key(){return `<div class="ibs-key">${Object.entries(IBS).map(([k,v])=>`<div class="k-${k}"><strong>${k} · ${v.naam}</strong><span>${v.vraag}</span></div>`).join('')}</div>`}
 
 function start(){
-  return `<header class="stack"><span class="mono">Tabletop-oefening crisiscommunicatie · spoor</span>
+  return `<header class="stack hero"><span class="mono">Tabletop-oefening crisiscommunicatie · spoor</span>
   <h1>Spoorcrisis IBS-oefening</h1>
   <p class="lead">Je zit in het crisisteam van een fictieve spoorbeheerder. In drie rondes komen signalen binnen. Label elk signaal, schrijf je advies en vergelijk het met de uitwerking.</p></header>
   ${key()}
@@ -328,7 +334,7 @@ function eind(){
   const good=tot.I[0]+tot.S[0]+tot.B[0],all=tot.I[1]+tot.S[1]+tot.B[1];
   const zc=[0,1,2].reduce((a,r)=>a+checks(r).filter(Boolean).length,0);
   const zwak=Object.entries(tot).sort((a,b)=>a[1][0]/a[1][1]-b[1][0]/b[1][1])[0];
-  return `<header class="stack"><span class="mono">Eindscore · ${esc(S().titel)}</span><h1>${good} van ${all} signalen goed gelabeld</h1>
+  return `<header class="stack hero"><span class="mono">Eindscore · ${esc(S().titel)}</span><h1>${good} van ${all} signalen goed gelabeld</h1>
   <p class="lead">${good===all?'Alle signalen goed herkend.':`Het lastigst was ${IBS[zwak[0]].naam.toLowerCase()}: ${zwak[1][0]} van ${zwak[1][1]} herkend.`}</p></header>
   <div class="score">${Object.entries(tot).map(([k,v])=>`<div><span class="mono t-${k}">${IBS[k].naam}</span><b>${v[0]}/${v[1]}</b></div>`).join('')}<div><span class="mono">Zelfcheck advies</span><b>${zc}/12</b></div></div>
   ${mis.length?`<section class="stack"><h2>Nog eens bekijken</h2><div class="log">${mis.map(([ri,s,g])=>`<div class="sig"><span class="mono">Ronde ${ri+1} · ${s[0]} · ${s[1]}</span><q>${s[2]}</q><span class="verdict bad">Jij koos ${IBS[g].naam.toLowerCase()}, het is ${IBS[s[3]].naam.toLowerCase()}</span><span class="why">${s[4]}</span></div>`).join('')}</div></section>`:''}
@@ -341,7 +347,7 @@ function eind(){
 }
 
 function render(top){
-  app.innerHTML=st.view==='start'?start():st.view==='eind'?eind():ronde();
+  app.innerHTML=(st.view==='start'?start():st.view==='eind'?eind():ronde())+'<p class="foot">Oefenmateriaal. De scenario’s, plaatsnamen en citaten zijn fictief.</p>';
   if(top) window.scrollTo(0,0);
 }
 app.addEventListener('click',e=>{
