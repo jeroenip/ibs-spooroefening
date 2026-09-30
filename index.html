@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Spoorcrisis IBS-oefening</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: een crisislogboek. Eén kolom, tijdstempels in mono, signalen als logregels met een IBS-keuze eronder. */
+:root{
+  --bg:#F2F4F3; --surface:#FFFFFF; --ink:#15201D; --muted:#5A6763; --line:#D3DAD7;
+  --accent:#0B6B4F; --accent-ink:#FFFFFF;
+  --i:#1F56A8; --i-bg:#E4ECF8; --s:#9A5A00; --s-bg:#FAEEDA; --b:#8A2B68; --b-bg:#F6E3EF;
+  --ok:#0B6B4F; --bad:#B3261E;
+  --display:"Bricolage Grotesque","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#111816; --surface:#1A2421; --ink:#E8EEEB; --muted:#9CABA6; --line:#2E3B37;
+  --accent:#4FC79E; --accent-ink:#0B1613;
+  --i:#8DB4F2; --i-bg:#1B2C47; --s:#F0B45A; --s-bg:#3A2A10; --b:#E995C8; --b-bg:#3D1C31;
+  --ok:#4FC79E; --bad:#FF8A80; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#111816; --surface:#1A2421; --ink:#E8EEEB; --muted:#9CABA6; --line:#2E3B37;
+  --accent:#4FC79E; --accent-ink:#0B1613;
+  --i:#8DB4F2; --i-bg:#1B2C47; --s:#F0B45A; --s-bg:#3A2A10; --b:#E995C8; --b-bg:#3D1C31;
+  --ok:#4FC79E; --bad:#FF8A80; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:24px 64px}
+#app{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.5rem;font-weight:800}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0;max-width:65ch}
+.mono{font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.lead{color:var(--muted);font-size:1.05rem}
+
+.ibs-key{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ibs-key div{padding:12px;border-radius:6px;min-width:0}
+.ibs-key strong{display:block;font-family:var(--display);font-size:1rem}
+.ibs-key span{font-size:.9rem}
+.k-I{background:var(--i-bg);color:var(--i)} .k-S{background:var(--s-bg);color:var(--s)} .k-B{background:var(--b-bg);color:var(--b)}
+@media (max-width:560px){.ibs-key{grid-template-columns:1fr}}
+
+fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+legend{padding:0;margin-bottom:8px}
+.opts{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.opt{text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:12px;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.opt small{color:var(--muted);font-size:.875rem}
+.opt[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.btn{font:600 1rem var(--body);background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:12px 20px;cursor:pointer;align-self:flex-start}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:2px solid var(--ink);padding-block:8px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;z-index:2}
+.sit{border-left:4px solid var(--ink);padding-left:16px}
+
+.log{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.sig{padding-block:16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.sig q{quotes:"“" "”";font-size:1.05rem}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{font:500 .9rem var(--body);padding:8px 4px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-width:0;overflow-wrap:anywhere}
+.seg button[aria-pressed="true"].l-I{background:var(--i-bg);border-color:var(--i);color:var(--i);font-weight:600}
+.seg button[aria-pressed="true"].l-S{background:var(--s-bg);border-color:var(--s);color:var(--s);font-weight:600}
+.seg button[aria-pressed="true"].l-B{background:var(--b-bg);border-color:var(--b);color:var(--b);font-weight:600}
+.seg button:disabled{cursor:default}
+.seg button.right{outline:2px solid var(--ok);outline-offset:1px}
+.verdict{font-weight:600}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
+.why{color:var(--muted);font-size:.95rem}
+
+textarea{width:100%;min-height:150px;font:inherit;padding:12px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);resize:vertical}
+.model{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.model dl{margin:0;display:flex;flex-direction:column;gap:10px}
+.model dt{font-family:var(--display);font-weight:600}
+.model dd{margin:0}
+.t-I{color:var(--i)} .t-S{color:var(--s)} .t-B{color:var(--b)}
+.mine{border-left:4px solid var(--accent);padding-left:12px}
+.check{display:flex;gap:10px;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
+details summary{cursor:pointer;font-weight:600}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.score div{padding:12px;border-radius:6px;background:var(--surface);border:1px solid var(--line)}
+.score b{font-family:var(--display);font-size:1.75rem;display:block;font-variant-numeric:tabular-nums}
+ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+</style>
+
+<div id="app"></div>
+
+<script>
+const IBS={
+  I:{naam:'Informatiebehoefte',kort:'Informatie',vraag:'Wat is er aan de hand? Wat weten we, wat nog niet?'},
+  S:{naam:'Schadebeperking',kort:'Schade­beperking',vraag:'Wat moet ik doen of laten? Handelingsperspectief.'},
+  B:{naam:'Betekenisgeving',kort:'Betekenis',vraag:'Wat betekent dit voor ons? Emotie, duiding, vertrouwen.'}
+};
+const ROLLEN={
+  adv:{naam:'Communicatieadviseur',taak:'Adviseert het crisisteam over strategie en kernboodschap.',vraag:'Wat adviseer je het crisisteam nu? Geef per I, S en B je kernboodschap en je belangrijkste strategische keuze.',
+    check:['Ik geef één duidelijk advies dat het team direct kan besluiten','Ik benoem wat we nog niet weten en hoe we daarmee omgaan','Ik noem een volgend updatemoment of vervolgstap']},
+  wv:{naam:'Woordvoerder',taak:'Staat de pers te woord en bewaakt de woordvoeringslijn.',vraag:'Wat zeg je nu tegen de pers, en wat uitdrukkelijk nog niet? Schrijf je woordvoeringslijn.',
+    check:['Mijn lijn bevat alleen bevestigde feiten','Ik speculeer niet over oorzaak of schuld','Ik toon eerst betrokkenheid, daarna de feiten']},
+  oa:{naam:'Omgevingsanalist',taak:'Duidt media en sociale media en maakt het omgevingsbeeld.',vraag:'Wat is je omgevingsbeeld? Wat leeft er per I, S en B, bij wie, en wat verwacht je het komende uur?',
+    check:['Ik onderscheid feiten, vragen en sentiment','Ik benoem welke groepen wat nodig hebben','Ik kijk vooruit: wat komt er op ons af?']},
+  pa:{naam:'Public affairs-adviseur',taak:'Houdt bestuurders, politiek en ministerie aangehaakt.',vraag:'Welke bestuurders en politici informeer je, in welke volgorde en met welke boodschap?',
+    check:['Bestuurders horen het van ons vóór ze het in de media lezen','Mijn boodschap is feitelijk en gelijk aan de perslijn','Ik benoem het politieke risico dat ik zie']},
+  red:{naam:'Redacteur',taak:'Schrijft en publiceert berichten op web, sociale media en intern.',vraag:'Welke berichten publiceer je nu, op welke kanalen en voor wie? Schrijf je belangrijkste bericht uit.',
+    check:['Er is één bron waar alle berichten naar verwijzen','Mijn bericht is begrijpelijk en heeft een tijdstempel','Medewerkers lezen het intern niet later dan de buitenwereld']}
+};
+const RK=Object.keys(ROLLEN);
+// signaal: [bron, afzender, tekst, label, uitleg]
+const SCEN=[
+{id:'ontsporing',titel:'Ontsporing goederentrein bij Lindewijk',kort:'Een ketelwagen met ethanol lekt vlak bij de dorpskern.',rondes:[
+ {tijd:'05.30 uur · T+0.40',sit:'Om 04.50 uur is een goederentrein ontspoord bij het dorp Lindewijk. Eén ketelwagen met ethanol lekt. Er zijn geen gewonden. De brandweer heeft een gebied van 500 meter afgezet. Er rijden geen treinen tussen Lindewijk en Merwedam.',
+  sig:[
+   ['Sociale media','Bewoner','Enorme knal bij het spoor in Lindewijk, overal zwaailichten. Wat is er gebeurd??','I','Een pure feitenvraag: wat is er aan de hand?'],
+   ['Publieksnummer','Bewoner Spoorlaan','Ik woon aan de Spoorlaan. Moet ik ramen en deuren dichthouden? Kunnen de kinderen straks naar school?','S','De beller vraagt wat hij moet doen of laten: handelingsperspectief.'],
+   ['Pers','Regionale omroep','Klopt het dat er gevaarlijke stoffen in de wagons zaten, en welke?','I','De journalist wil feiten bevestigd krijgen.'],
+   ['Sociale media','Buurtgroep Lindewijk','Dit is de derde keer dat het hier misgaat. Wij zijn blijkbaar minder waard dan een goederentrein.','B','Hier wordt geen vraag gesteld. Het gaat om boosheid en het gevoel niet gezien te worden.'],
+   ['Klantenservice','Reiziger','Mijn trein van 6.12 uur rijdt niet. Moet ik omreizen of kan ik beter thuisblijven?','S','De reiziger zoekt een keuze die hij zelf kan maken om de gevolgen te beperken.']],
+  adv:{I:'Meld wat vaststaat: goederentrein ontspoord om 04.50 uur, één ketelwagen lekt ethanol, geen gewonden. Zeg ook wat je nog niet weet en wanneer de volgende update komt.',
+   S:'Eén handelingsperspectief, afgestemd met de veiligheidsregio: binnen 500 meter ramen en deuren dicht en volg de regionale crisiskanalen. Reizigers: geen treinen tussen Lindewijk en Merwedam, kijk in de reisplanner.',
+   B:'Erken de schrik in het dorp en het gevoel dat het hier vaker misgaat. Nog niets verdedigen of verklaren. Laat zien dat de directie betrokken is.'},
+  rol:{adv:'Spreek een vaste updatecadans af en laat de veiligheidsregio leidend zijn op het handelingsperspectief, zodat er één boodschap klinkt.',
+   wv:'Korte verklaring: feiten, medeleven met omwonenden, volgend updatemoment. De lading bevestig je pas als die is geverifieerd. Niets over de oorzaak.',
+   oa:'De meeste vragen gaan over veiligheid thuis. In de buurtgroep groeit boosheid over eerdere incidenten. Verwacht binnen het uur vragen over de lading en over school en werk.',
+   pa:'Bel de burgemeester en de wethouder voordat zij het uit de media horen. Informeer het ministerie kort en feitelijk.',
+   red:'Eén webpagina met tijdstempel als bron. Berichten op sociale media verwijzen daarnaar en naar het kanaal van de veiligheidsregio. Zet tegelijk een kort bericht op intranet.'}},
+ {tijd:'08.00 uur · T+3.10',sit:'Het lek is gedicht. Uit voorzorg zijn 120 woningen ontruimd; bewoners worden opgevangen in de sporthal. Metingen laten geen gevaarlijke concentraties zien. De oorzaak is onbekend.',
+  sig:[
+   ['Opvanglocatie','Geëvacueerde bewoner','Hoe lang gaat de ontruiming nog duren?','I','Een vraag naar de stand van zaken. Er zit ongeduld onder, maar de kern is informatie.'],
+   ['Publieksnummer','Moeder','Mijn dochter heeft astma en we hebben die lucht ingeademd. Moeten we naar de huisarts?','S','Zij wil weten wat ze moet doen om gezondheidsschade te voorkomen.'],
+   ['Sociale media','Raadslid','Al jaren waarschuwen wij voor gevaarlijke treinen door onze dorpskern. Nu is het zover. Wie neemt verantwoordelijkheid?','B','Dit is duiding: het incident wordt in een groter verhaal over verantwoordelijkheid en veiligheid geplaatst.'],
+   ['E-mail','Ondernemer','Ons bedrijf ligt in het afgezette gebied. Kunnen wij vandaag laden en lossen, en bij wie meld ik schade?','S','Praktische vraag naar wat hij kan doen en waar hij terechtkan.'],
+   ['Pers','Landelijke krant','Wat was de oorzaak? Was er iets mis met de wissel?','I','Feitenvraag. Het eerlijke antwoord is dat dit nog wordt onderzocht.'],
+   ['Intern','Medewerker','Collega’s van de incidentenbestrijding staan er al sinds vijf uur. Mensen zijn geschrokken; het had ook anders kunnen aflopen.','B','Ook intern is er behoefte aan erkenning en duiding.']],
+  adv:{I:'Lek gedicht, 120 woningen uit voorzorg ontruimd, metingen tonen geen gevaarlijke concentraties. Oorzaak wordt onderzocht. Geef een eerlijke verwachting over de duur van de ontruiming, ook als die nog onzeker is.',
+   S:'Verwijs gezondheidsvragen naar het advies van de GGD. Noem één loket voor ondernemers en bewoners met schade. Vertel geëvacueerden waar ze terechtkunnen voor spullen, huisdieren en medicijnen.',
+   B:'Laat een directielid naar de opvanglocatie gaan om te luisteren. Erken dat zorgen over vervoer van gevaarlijke stoffen door het dorp begrijpelijk zijn. Bedank de hulpverleners en eigen collega’s.'},
+  rol:{adv:'Adviseer nu zichtbaar aanwezig te zijn in het dorp. Betekenisgeving vraagt een gezicht, niet alleen een bericht.',
+   wv:'Oorzaak: “dat wordt onderzocht, wij speculeren niet.” Over het raadslid: erken de zorg, ga het debat over schuld niet aan.',
+   oa:'De toon verschuift van vragen naar verwijten. Het frame “gevaarlijke treinen door de dorpskern” krijgt landelijk bereik. Astma en gezondheid kunnen een tweede golf vragen geven.',
+   pa:'Informeer fractievoorzitters via de burgemeester. Bereid het ministerie voor op Kamervragen over het vervoer van gevaarlijke stoffen.',
+   red:'Werk de webpagina bij met een vraag-en-antwoordlijst over gezondheid, schade en terugkeer. Intern bericht met dank aan de collega’s ter plaatse.'}},
+ {tijd:'Volgende dag, 10.00 uur',sit:'Bewoners zijn terug in hun huis. Het spoor blijft nog vijf dagen dicht voor berging en herstel. Een onafhankelijk onderzoek naar de oorzaak is gestart.',
+  sig:[
+   ['Publieksnummer','Bewoner','Is de grond in mijn moestuin nog veilig? Kan ik mijn groente eten?','S','Vraag naar wat wel en niet te doen om schade te voorkomen.'],
+   ['Politiek','Kamerlid','Hoe vaak rijden deze transporten door dorpskernen en wie houdt daar toezicht op?','I','Feitelijke vragen, ook al is de afzender politiek.'],
+   ['Brief','Bewonerscomité','Wij willen geen excuusbrief. Wij willen dat er geluisterd wordt. Het vertrouwen is weg.','B','Het gaat om vertrouwen en gehoord worden.'],
+   ['E-mail','Vervoerder','Wanneer is het spoor weer vrij? Wij moeten onze dienstregeling plannen.','I','Een vraag naar de planning.'],
+   ['Pers','Talkshowredactie','Wil de directeur vanavond komen uitleggen wat dit zegt over de veiligheid op het spoor?','B','De redactie zoekt duiding: wat betekent dit incident in het grotere geheel?']],
+  adv:{I:'Spoor vijf dagen dicht, onafhankelijk onderzoek gestart, uitkomsten worden gedeeld. Lever feiten over transporten aan via het ministerie.',
+   S:'Deel het advies van de GGD over tuinen en bodem. Houd het schadeloket open en vermeld vervangend vervoer voor de hele week.',
+   B:'Organiseer een bewonersbijeenkomst waar de directie luistert. Beloof alleen wat je kunt waarmaken. Beslis bewust over de talkshow: alleen als de directeur iets te zeggen heeft over veiligheid én over het dorp.'},
+  rol:{adv:'Schuif van crisis naar nafase: maak een plan voor de komende weken met vaste contactmomenten voor het dorp.',
+   wv:'Bereid de directeur voor op de vraag “is het spoor veilig?” Antwoord met feiten en erkenning, zonder vooruit te lopen op het onderzoek.',
+   oa:'Het volume daalt, maar het vertrouwensframe blijft hangen bij het bewonerscomité en de lokale politiek. Landelijk verschuift het gesprek naar beleid.',
+   pa:'Stem de beantwoording van Kamervragen af met het ministerie. Bied de gemeenteraad een technische briefing aan.',
+   red:'Bewonersbrief met uitnodiging voor de bijeenkomst. Webpagina wordt dossierpagina met planning van het herstel.'}}]},
+
+{id:'storing',titel:'Landelijke storing verkeersleiding',kort:'Vrijdagavondspits: in heel het land staan de treinen stil.',rondes:[
+ {tijd:'17.00 uur · T+0.20',sit:'Vrijdag om 16.40 uur is het landelijke verkeersleidingssysteem uitgevallen. Alle treinen staan stil, ook tussen stations. De oorzaak is onbekend. Op de grote stations wordt het snel druk.',
+  sig:[
+   ['Sociale media','Reiziger','Sta al twintig minuten stil tussen twee stations. Geen omroep, niks. Wat is er aan de hand?','I','Feitenvraag: wat is er aan de hand?'],
+   ['Sociale media','Reiziger in gestrande trein','Het wordt hier benauwd en iemand voelt zich niet goed. Mogen we zelf de deuren openen en uitstappen?','S','Urgent handelingsperspectief. Een fout antwoord kan letsel opleveren.'],
+   ['Pers','Persbureau','Is er sprake van een hack?','I','Feitenvraag. Wat je niet weet, kun je ook benoemen.'],
+   ['Sociale media','Reiziger','Weer een vrijdagmiddag, weer alles plat. Dit land kan niks meer.','B','Frustratie en een oordeel over betrouwbaarheid.'],
+   ['Klantenservice','Vader','Mijn dochter van 14 staat alleen op station Merwedam. Moet ze blijven wachten of wordt er vervoer geregeld?','S','Hij wil weten wat zijn dochter moet doen.']],
+  adv:{I:'Landelijke storing in het verkeersleidingssysteem sinds 16.40 uur, er rijden geen treinen. Oorzaak onbekend; er is nu geen aanwijzing voor een hack. Volgende update over dertig minuten.',
+   S:'Dringend: blijf in de trein, stap niet zelf uit op het spoor; bel 112 bij onwel worden. Wie nog niet vertrokken is: stel je reis uit of kies ander vervoer. Op stations: volg aanwijzingen van personeel.',
+   B:'Erken dat dit op het slechtste moment van de week komt en dat mensen vastzitten. Excuses zijn op hun plaats, zonder uitleg die als verdediging klinkt.'},
+  rol:{adv:'Geef schadebeperking voorrang: de boodschap “blijf in de trein” moet binnen minuten op alle kanalen staan, samen met de vervoerders.',
+   wv:'Over een hack: “daar hebben we geen aanwijzingen voor, de oorzaak wordt onderzocht.” Herhaal in elk gesprek het veiligheidsadvies.',
+   oa:'Het volume is enorm. Let op meldingen van mensen die zelf uitstappen en op beelden van drukte op stations. Het frame “hack” gaat rond zonder bron.',
+   pa:'Informeer het ministerie meteen. Landelijke impact betekent dat de bewindspersoon vanavond vragen krijgt.',
+   red:'Vastgezet bericht op alle kanalen met het veiligheidsadvies en een tijdstempel. Zet dezelfde tekst op intranet voor collega’s op stations.'}},
+ {tijd:'19.00 uur · T+2.20',sit:'De oorzaak is gevonden: een mislukte software-update. Het is geen hack. De gestrande treinen zijn geëvacueerd. Het herstarten duurt zeker tot 22.00 uur. Het reservesysteem is niet goed opgestart.',
+  sig:[
+   ['Klantenservice','Verpleegkundige','Ik heb vannacht dienst. Rijdt er na tien uur weer iets?','I','Vraag naar de verwachting.'],
+   ['Sociale media','Reiziger','Ik heb een taxi van 90 euro genomen. Krijg ik dat terug en hoe vraag ik dat aan?','S','Financiële schade beperken: wat moet ik doen om geld terug te krijgen?'],
+   ['Opinie','Columnist','Eén update en het hele land staat stil. Het spoor is een kaartenhuis.','B','Duiding: het incident wordt een symbool voor kwetsbaarheid.'],
+   ['Telefoon','Evenementenorganisator','Vanavond komen 40.000 bezoekers naar het stadion. Moeten wij adviseren om niet met de trein te komen?','S','Hij wil een advies waarop hij kan handelen.'],
+   ['Sociale media','Kamerlid','Onacceptabel. Ik wil hierover maandag een debat met de minister.','B','Politieke duiding en een oordeel. Er wordt geen informatie gevraagd.'],
+   ['Pers','Journalist','Waarom werkte het reservesysteem niet?','I','Feitenvraag, ook al is het een pijnlijke.']],
+  adv:{I:'Oorzaak: een mislukte software-update, geen hack. Herstart duurt zeker tot 22.00 uur; daarna komt het verkeer langzaam op gang. Het reservesysteem startte niet goed op; waarom wordt onderzocht.',
+   S:'Reis vanavond niet met de trein. Evenementen: adviseer bezoekers ander vervoer. Verwijs voor vergoeding naar de regeling van de vervoerder en vertel dat bonnen bewaard moeten worden.',
+   B:'Ruimhartige excuses van de directie, op camera. Erken dat het land op het spoor moet kunnen rekenen en dat dit niet had mogen gebeuren.'},
+  rol:{adv:'Adviseer de directeur vanavond zelf naar buiten te treden. Een fout van eigen makelij vraagt een gezicht en excuses.',
+   wv:'Wees open over het reservesysteem: bevestig dat het niet werkte en dat je uitzoekt waarom. Noem 22.00 uur nadrukkelijk als vroegste tijd, niet als belofte.',
+   oa:'Het frame kantelt van overlast naar falen. “Kaartenhuis” en de debataanvraag versterken elkaar. Verwacht vragen over wie de update goedkeurde.',
+   pa:'Lever het ministerie vanavond nog een eerste feitenrelaas. Bel de woordvoerders in de Kamer voordat het weekend begint.',
+   red:'Werk het vastgezette bericht bij met oorzaak, verwachting en vergoeding. Zet het excuus van de directeur als korte video online.'}},
+ {tijd:'Zaterdag, 09.00 uur',sit:'De treinen rijden weer, met enkele vertragingen. Naar schatting 300.000 reizigers zijn getroffen. Een medewerker zegt anoniem in de krant dat er gewaarschuwd was voor de update.',
+  sig:[
+   ['Klantenservice','Reiziger','Rijdt alles vandaag weer volgens de dienstregeling?','I','Feitenvraag over de actuele situatie.'],
+   ['Pers','Anonieme verkeersleider','Wij waarschuwden al maanden voor die update. Er werd niet geluisterd.','B','Dit gaat over cultuur en vertrouwen en geeft het incident een nieuwe betekenis.'],
+   ['Brief','Reizigersorganisatie','Wij eisen ruimhartige compensatie. Waar kunnen reizigers zich melden?','S','Het gaat om herstel van schade en waar mensen terechtkunnen.'],
+   ['E-mail','Ministerie','Graag vóór 12.00 uur een feitenrelaas voor de Kamerbrief.','I','Een formele informatievraag.'],
+   ['Sociale media','Reiziger','Ik heb drie uur opgesloten gezeten zonder wc of water. Niemand heeft sorry gezegd.','B','De behoefte is erkenning, geen informatie.']],
+  adv:{I:'Treinen rijden weer, met beperkte vertraging. Lever een feitenrelaas met tijdlijn. Kondig een onafhankelijke evaluatie aan.',
+   S:'Maak samen met de vervoerders één duidelijke route voor compensatie. Vertel reizigers vandaag nog waar en hoe.',
+   B:'Reageer op de interne waarschuwing zonder de melder aan te vallen: “we nemen dit serieus en het hoort in de evaluatie.” Spreek getroffen reizigers persoonlijk aan met excuses.'},
+  rol:{adv:'De crisis is operationeel voorbij, de vertrouwenscrisis begint. Adviseer de interne dialoog vandaag te starten.',
+   wv:'Ontken de waarschuwing niet en bevestig hem ook niet zonder feiten. Lijn: we willen dit weten en onderzoeken het onafhankelijk.',
+   oa:'De anonieme medewerker is het nieuwe verhaal. Reizigersverhalen over opsluiting krijgen veel bijval. Maandag volgt het debat.',
+   pa:'Feitenrelaas op tijd en volledig; geen verrassingen voor de minister. Inventariseer welke fracties het debat steunen.',
+   red:'Bericht van de directie aan alle medewerkers vóór de buitenwereld erover leest. Compensatiepagina online met heldere stappen.'}}]},
+
+{id:'overweg',titel:'Aanrijding op overweg bij Broekhaven',kort:'Een reizigerstrein botst in de ochtendspits op een vrachtwagen.',rondes:[
+ {tijd:'08.15 uur · T+0.30',sit:'Om 07.45 uur is een reizigerstrein op een overweg bij Broekhaven op een vrachtwagen gebotst. Het voorste rijtuig is ontspoord. Er zijn gewonden; aantallen zijn onbekend. Hulpdiensten zijn ter plaatse. In de trein zaten veel scholieren.',
+  sig:[
+   ['Publieksnummer','Ouder','Mijn zoon zat in die trein en neemt niet op. Welk nummer kan ik bellen, waar moet ik heen?','S','Deze ouder wil weten wat hij nu moet doen. Er is een loket voor verwanten nodig.'],
+   ['Pers','Journalist','Hoeveel slachtoffers zijn er en waren de slagbomen dicht?','I','Feitenvragen. Slachtofferaantallen komen van de hulpdiensten.'],
+   ['Sociale media','Omstander','Verschrikkelijk wat ik net zag. Ik ben er kapot van. Dit vergeet ik nooit meer.','B','Emotie en verwerking.'],
+   ['Sociale media','Forens','Welke overwegen en trajecten zijn nu afgesloten?','I','Feitenvraag over de actuele situatie.'],
+   ['Publieksnummer','Omwonende','Er staan mensen te filmen bij de hekken en kinderen lopen richting het spoor. Wat moeten we doen?','S','Vraag om handelingsperspectief om verdere schade te voorkomen.']],
+  adv:{I:'Bevestig de botsing, tijd en plaats, en dat hulpdiensten ter plaatse zijn. Aantallen slachtoffers komen alleen van de hulpdiensten. Er rijden geen treinen op het traject.',
+   S:'Verwijs verwanten naar het nummer en de opvanglocatie van de veiligheidsregio. Vraag publiek om afstand te houden van het spoor en geen beelden van slachtoffers te delen.',
+   B:'Begin met medeleven met slachtoffers, hun naasten en de hulpverleners. Geen woord over schuld of over de slagbomen.'},
+  rol:{adv:'Adviseer de volgorde: eerst mensen, dan feiten. De veiligheidsregio is leidend; sluit aan op hun boodschap.',
+   wv:'Slagbomen: “dat is onderdeel van het onderzoek.” Noem geen aantallen en geen details over slachtoffers.',
+   oa:'Er circuleren beelden van de plek. Ouders zoeken hun kinderen via sociale media. Verwacht speculatie over de chauffeur en de overweg.',
+   pa:'Bel de burgemeester. Informeer het ministerie; bij slachtoffers wil de bewindspersoon snel reageren.',
+   red:'Sober bericht zonder beeld van het ongeval. Oproep om geen beelden te delen. Intern: bericht aan collega’s en opvang voor betrokken personeel.'}},
+ {tijd:'11.00 uur · T+3.15',sit:'De vrachtwagenchauffeur is overleden. Twaalf reizigers zijn gewond, van wie twee ernstig. De machinist is lichtgewond. De overweg stond op een lijst van overwegen die aangepakt worden. Het traject blijft zeker twee dagen dicht.',
+  sig:[
+   ['Pers','Dorpsraad','Deze overweg staat al tien jaar op de lijst. Hoeveel doden moeten er nog vallen?','B','Een aanklacht die het ongeval betekenis geeft: dit had voorkomen kunnen worden.'],
+   ['Klantenservice','Reiziger uit de trein','Ik ben zonder verwondingen naar huis gegaan, maar ik tril nog steeds. Bij wie kan ik terecht voor hulp?','S','Vraag naar wat zij kan doen en waar ze hulp vindt.'],
+   ['Pers','Journalist','Stond deze overweg op de lijst om aangepakt te worden, en sinds wanneer?','I','Feitenvraag. Eerlijk antwoorden voorkomt dat het later een onthulling wordt.'],
+   ['Sociale media','Brancheorganisatie transport','Onze chauffeur wordt online al als schuldige weggezet. Hij laat een gezin achter.','B','Dit gaat over waardigheid en over het schuldframe.'],
+   ['Klantenservice','Reiziger','Hoe lang blijft het traject dicht?','I','Feitenvraag.'],
+   ['Pers','Vakbond','De machinist is zwaar aangeslagen. Machinisten maken dit veel te vaak mee.','B','Erkenning voor de impact op personeel.']],
+  adv:{I:'Bevestig, na afstemming met politie en familie, dat de chauffeur is overleden en dat er twaalf gewonden zijn. Bevestig dat de overweg op de lijst stond en sinds wanneer. Traject zeker twee dagen dicht.',
+   S:'Wijs reizigers uit de trein en getuigen op slachtofferhulp en op het contactpunt van de vervoerder. Vermeld vervangend vervoer.',
+   B:'Condoleer de familie van de chauffeur en spreek je uit tegen het aanwijzen van schuldigen. Erken de pijn van het dorp over de overweg zonder je te verschuilen achter procedures.'},
+  rol:{adv:'Adviseer volledige openheid over de lijst. Als je het niet zelf vertelt, wordt het morgen een onthulling.',
+   wv:'“Ja, deze overweg stond op de lijst. Wat dat betekent voor dit ongeval moet het onderzoek uitwijzen.” Geen oordeel over de chauffeur.',
+   oa:'Twee frames botsen: “schuld van de chauffeur” en “falende spoorbeheerder”. Het tweede wint lokaal snel terrein. Let op berichten over de machinist.',
+   pa:'Bereid wethouder en gedeputeerde voor op vragen over planning en geld voor de overweg. Geen toezeggingen zonder besluit.',
+   red:'Bericht met condoleance en feiten. Verwijzing naar slachtofferhulp bovenaan. Intern aandacht voor de machinist en de collega’s ter plaatse.'}},
+ {tijd:'Volgende dag, 09.30 uur',sit:'De overweg gaat morgen weer open. Bij de overweg liggen bloemen. Vrijdag is er een stille tocht. Een onafhankelijk onderzoek loopt.',
+  sig:[
+   ['E-mail','Organisator stille tocht','Er liggen bloemen bij de overweg. Komt er vrijdag iemand van het spoor meelopen?','B','Een uitnodiging om mee te rouwen: betekenisgeving in de zuiverste vorm.'],
+   ['Pers','Journalist','Wanneer komt het onderzoek met de eerste bevindingen?','I','Feitenvraag over proces en planning.'],
+   ['Publieksnummer','Omwonende','De overweg gaat morgen weer open. Kunnen mijn kinderen er gewoon overheen fietsen?','S','Zij wil weten wat ze moet doen of laten.'],
+   ['Brief','Wethouder','Wat is de planning en het budget voor de aanpak van deze overweg?','I','Feitelijke vraag, met politieke lading eronder.'],
+   ['Klantenservice','Getuige','Ik zie het elke keer voor me als ik de bellen hoor. Waar kan ik hulp krijgen?','S','Vraag naar een concrete stap om persoonlijke schade te beperken.']],
+  adv:{I:'Vertel wat het onderzoek inhoudt en dat de planning bij de onderzoekers ligt. Geef de wethouder de feitelijke stand van planning en budget.',
+   S:'Leg uit dat de overweg technisch is gecontroleerd voordat hij opengaat en welke extra maatregelen er tijdelijk zijn. Blijf verwijzen naar slachtofferhulp.',
+   B:'Laat de directie meelopen in de stille tocht, bescheiden en zonder toespraak, tenzij het dorp erom vraagt. Zoek vooraf contact met de nabestaanden.'},
+  rol:{adv:'Adviseer aanwezigheid zonder podium. Het dorp bepaalt de vorm; de organisatie sluit aan.',
+   wv:'Geen interviews tijdens de tocht. Vooraf één korte verklaring over waarom de directie meeloopt.',
+   oa:'De toon is verdrietig en waardig. Boosheid richt zich op de politiek en de lijst. De heropening kan nieuwe onrust geven.',
+   pa:'Geef de wethouder een eerlijk antwoord over planning en budget en spreek een bestuurlijk overleg af na de tocht.',
+   red:'Bewonersbrief over de heropening en de controles. Kort, ingetogen bericht over deelname aan de stille tocht.'}}]}
+];
+
+let st={view:'start',scen:null,rol:'adv',modus:'solo',r:0,stap:'label',lab:{},note:{},chk:{}};
+const app=document.getElementById('app');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const S=()=>SCEN[st.scen], R=()=>S().rondes[st.r];
+const labs=r=>st.lab[r]||(st.lab[r]={});
+const checks=r=>st.chk[r]||(st.chk[r]=[false,false,false,false]);
+
+function key(){return `<div class="ibs-key">${Object.entries(IBS).map(([k,v])=>`<div class="k-${k}"><strong>${k} · ${v.naam}</strong><span>${v.vraag}</span></div>`).join('')}</div>`}
+
+function start(){
+  return `<header class="stack"><span class="mono">Tabletop-oefening crisiscommunicatie · spoor</span>
+  <h1>Spoorcrisis IBS-oefening</h1>
+  <p class="lead">Je zit in het crisisteam van een fictieve spoorbeheerder. In drie rondes komen signalen binnen. Label elk signaal, schrijf je advies en vergelijk het met de uitwerking.</p></header>
+  ${key()}
+  <fieldset><legend><h3>Scenario</h3></legend><div class="opts">${SCEN.map((s,i)=>`<button class="opt" data-a="scen" data-v="${i}" aria-pressed="${st.scen===i}"><strong>${s.titel}</strong><small>${s.kort}</small></button>`).join('')}</div></fieldset>
+  <fieldset><legend><h3>Spelvorm</h3></legend><div class="opts">
+   <button class="opt" data-a="modus" data-v="solo" aria-pressed="${st.modus==='solo'}"><strong>Solo</strong><small>Je speelt één rol en schrijft zelf je advies.</small></button>
+   <button class="opt" data-a="modus" data-v="groep" aria-pressed="${st.modus==='groep'}"><strong>Groep aan tafel</strong><small>Verdeel de vijf rollen, label samen en bespreek per rol het advies.</small></button></div></fieldset>
+  ${st.modus==='solo'?`<fieldset><legend><h3>Jouw rol</h3></legend><div class="opts">${RK.map(k=>`<button class="opt" data-a="rol" data-v="${k}" aria-pressed="${st.rol===k}"><strong>${ROLLEN[k].naam}</strong><small>${ROLLEN[k].taak}</small></button>`).join('')}</div></fieldset>`
+   :`<div class="stack"><h3>Rollen aan tafel</h3><ul>${RK.map(k=>`<li><strong>${ROLLEN[k].naam}.</strong> ${ROLLEN[k].taak}</li>`).join('')}</ul><p class="why">Met minder dan vijf spelers combineer je rollen. Eén speler leest de signalen voor en bedient het scherm.</p></div>`}
+  <button class="btn" data-a="go" ${st.scen===null?'disabled':''}>Start de oefening</button>
+  ${st.scen===null?'<p class="why">Kies eerst een scenario.</p>':''}`;
+}
+
+function ronde(){
+  const r=R(),L=labs(st.r),done=st.stap!=='label',n=r.sig.length,filled=Object.keys(L).length;
+  let h=`<div class="bar"><span class="mono">${esc(S().titel)}</span><span class="mono">Ronde ${st.r+1} van 3 · ${st.modus==='solo'?ROLLEN[st.rol].naam:'Groep'}</span></div>
+  <section class="stack"><span class="mono">${r.tijd}</span><h2>Situatie</h2><p class="sit">${r.sit}</p></section>
+  <section class="stack"><h2>Binnengekomen signalen</h2><p class="why">${done?'Bekijk per signaal de toelichting.':'Welke behoefte klinkt in elk signaal het sterkst door?'}</p>
+  <div class="log">${r.sig.map((s,i)=>{
+    const goed=L[i]===s[3];
+    return `<div class="sig"><span class="mono">${s[0]} · ${s[1]}</span><q>${s[2]}</q>
+    <div class="seg" role="group" aria-label="Label voor signaal ${i+1}">${['I','S','B'].map(k=>`<button class="l-${k}${done&&k===s[3]?' right':''}" data-a="lab" data-i="${i}" data-v="${k}" aria-pressed="${L[i]===k}" ${done?'disabled':''}>${IBS[k].kort}</button>`).join('')}</div>
+    ${done?`<span class="verdict ${goed?'ok':'bad'}">${goed?'Goed':'Niet goed'}: ${IBS[s[3]].naam}</span><span class="why">${s[4]}</span>`:''}</div>`}).join('')}</div>
+  ${!done?`<div class="row"><button class="btn" data-a="check" ${filled<n?'disabled':''}>Controleer labels</button><span class="why">${filled} van ${n} gelabeld</span></div>`
+   :`<p><strong>${r.sig.filter((s,i)=>L[i]===s[3]).length} van ${n} goed.</strong></p>`}</section>`;
+  if(done) h+=advies();
+  return h;
+}
+
+function advies(){
+  const r=R(),open=st.stap==='advfb',solo=st.modus==='solo',C=checks(st.r);
+  const crit=solo?['Mijn advies dekt alle drie: I, S en B',...ROLLEN[st.rol].check]:['Ons advies dekt alle drie: I, S en B','Elke rol heeft een eigen bijdrage geleverd','Onze boodschappen spreken elkaar niet tegen','We hebben benoemd wat we nog niet weten'];
+  let h=`<section class="stack"><h2>Advies aan het crisisteam</h2>`;
+  if(solo) h+=`<p><strong>${ROLLEN[st.rol].naam}.</strong> ${ROLLEN[st.rol].vraag}</p>`;
+  else h+=`<p>Neem vijf minuten. Elke rol beantwoordt de eigen vraag; leg het gezamenlijke advies hieronder vast.</p><ul>${RK.map(k=>`<li><strong>${ROLLEN[k].naam}:</strong> ${ROLLEN[k].vraag}</li>`).join('')}</ul>`;
+  h+=`<label class="mono" for="note-${st.r}">${solo?'Jouw advies':'Advies van de tafel'}</label>
+  <textarea id="note-${st.r}" data-a="note" placeholder="I: …&#10;S: …&#10;B: …">${esc(st.note[st.r]||'')}</textarea>`;
+  if(!open) return h+`<button class="btn" data-a="reveal">Toon de uitwerking</button></section>`;
+  h+=`<div class="model"><span class="mono">Uitwerking · zo kan het</span><dl>${['I','S','B'].map(k=>`<div><dt class="t-${k}">${IBS[k].naam}</dt><dd>${r.adv[k]}</dd></div>`).join('')}</dl>
+  ${solo?`<div class="mine"><h3>Jouw bijdrage als ${ROLLEN[st.rol].naam.toLowerCase()}</h3><p>${r.rol[st.rol]}</p></div>
+    <details><summary>Wat doen de andere rollen?</summary><dl style="margin-top:12px">${RK.filter(k=>k!==st.rol).map(k=>`<div><dt>${ROLLEN[k].naam}</dt><dd>${r.rol[k]}</dd></div>`).join('')}</dl></details>`
+   :`<dl>${RK.map(k=>`<div><dt>${ROLLEN[k].naam}</dt><dd>${r.rol[k]}</dd></div>`).join('')}</dl>`}</div>
+  <div class="stack"><h3>Zelfcheck</h3><p class="why">Vergelijk eerlijk met de uitwerking en vink aan wat klopt.</p>
+  ${crit.map((c,i)=>`<label class="check" for="chk-${st.r}-${i}"><input type="checkbox" id="chk-${st.r}-${i}" data-a="chk" data-i="${i}" ${C[i]?'checked':''}><span>${c}</span></label>`).join('')}</div>
+  <button class="btn" data-a="next">${st.r<2?'Naar ronde '+(st.r+2):'Naar de eindscore'}</button></section>`;
+  return h;
+}
+
+function eind(){
+  const tot={I:[0,0],S:[0,0],B:[0,0]},mis=[];
+  S().rondes.forEach((r,ri)=>r.sig.forEach((s,i)=>{tot[s[3]][1]++;const g=(st.lab[ri]||{})[i];if(g===s[3])tot[s[3]][0]++;else mis.push([ri,s,g])}));
+  const good=tot.I[0]+tot.S[0]+tot.B[0],all=tot.I[1]+tot.S[1]+tot.B[1];
+  const zc=[0,1,2].reduce((a,r)=>a+checks(r).filter(Boolean).length,0);
+  const zwak=Object.entries(tot).sort((a,b)=>a[1][0]/a[1][1]-b[1][0]/b[1][1])[0];
+  return `<header class="stack"><span class="mono">Eindscore · ${esc(S().titel)}</span><h1>${good} van ${all} signalen goed gelabeld</h1>
+  <p class="lead">${good===all?'Alle signalen goed herkend.':`Het lastigst was ${IBS[zwak[0]].naam.toLowerCase()}: ${zwak[1][0]} van ${zwak[1][1]} herkend.`}</p></header>
+  <div class="score">${Object.entries(tot).map(([k,v])=>`<div><span class="mono t-${k}">${IBS[k].naam}</span><b>${v[0]}/${v[1]}</b></div>`).join('')}<div><span class="mono">Zelfcheck advies</span><b>${zc}/12</b></div></div>
+  ${mis.length?`<section class="stack"><h2>Nog eens bekijken</h2><div class="log">${mis.map(([ri,s,g])=>`<div class="sig"><span class="mono">Ronde ${ri+1} · ${s[0]} · ${s[1]}</span><q>${s[2]}</q><span class="verdict bad">Jij koos ${IBS[g].naam.toLowerCase()}, het is ${IBS[s[3]].naam.toLowerCase()}</span><span class="why">${s[4]}</span></div>`).join('')}</div></section>`:''}
+  <section class="stack"><h2>Vuistregels</h2><ul>
+   <li>Vraagt iemand <em>wat er aan de hand is</em>, dan is het informatiebehoefte. Ook een politicus of journalist kan een zuivere feitenvraag stellen.</li>
+   <li>Vraagt iemand <em>wat hij moet doen of waar hij terechtkan</em>, dan is het schadebeperking.</li>
+   <li>Staat er geen vraag maar een oordeel, emotie of verwijt, dan is het betekenisgeving.</li>
+   <li>Een goed advies bedient alle drie, in de volgorde die de situatie vraagt. Bij gevaar gaat schadebeperking voor.</li></ul></section>
+  <div class="row"><button class="btn" data-a="again">Speel een ander scenario of andere rol</button></div>`;
+}
+
+function render(top){
+  app.innerHTML=st.view==='start'?start():st.view==='eind'?eind():ronde();
+  if(top) window.scrollTo(0,0);
+}
+app.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-a]'); if(!b||b.disabled) return;
+  const a=b.dataset.a,v=b.dataset.v; let top=false;
+  if(a==='scen') st.scen=+v;
+  else if(a==='modus') st.modus=v;
+  else if(a==='rol') st.rol=v;
+  else if(a==='go'){st.view='ronde';st.r=0;st.stap='label';st.lab={};st.note={};st.chk={};top=true}
+  else if(a==='lab') labs(st.r)[+b.dataset.i]=v;
+  else if(a==='check') st.stap='adv';
+  else if(a==='reveal') st.stap='advfb';
+  else if(a==='next'){ if(st.r<2){st.r++;st.stap='label'} else st.view='eind'; top=true }
+  else if(a==='again'){st.view='start';top=true}
+  render(top);
+  if(a==='check') document.querySelector('.verdict')?.scrollIntoView({block:'center',behavior:'smooth'});
+});
+app.addEventListener('input',e=>{const t=e.target; if(t.dataset.a==='note') st.note[st.r]=t.value});
+app.addEventListener('change',e=>{const t=e.target; if(t.dataset.a==='chk') checks(st.r)[+t.dataset.i]=t.checked});
+
+function boot(d){ if(d&&d.view) st=Object.assign(st,d); render(); }
+window.claude?.hot?.snapshot?.(()=>st);
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+</script>
+</body>
+</html>
